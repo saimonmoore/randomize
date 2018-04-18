@@ -26,8 +26,6 @@ class Form extends Component {
       session = JSON.parse(raw_session);
     } catch(error) { console.log('Error parsing session')}
 
-    const paddingLength = parseInt(session.paddingLength, 10);
-
     return session;
   }
 
@@ -37,7 +35,7 @@ class Form extends Component {
     const { session_name } = this.state;
     const session = this.getSession(session_name);
 
-    if (!session.items.length) {
+    if (!session || !session.items.length) {
       this.setState({ errors: `No randomization found for '${session_name}'` });
       return;
     }
@@ -61,7 +59,7 @@ class Form extends Component {
           <input type="submit" value="Find" />
         </p>
         {errors && 
-          <p className="App-error">{errors}</p>
+          <span className="App-error">{errors}</span>
         }
       </form>
     );

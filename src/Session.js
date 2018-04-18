@@ -11,7 +11,7 @@ class Session extends Component {
       items: null,
       start: 0,
       stop: 0,
-      session_name: null
+      session_name: ""
     };
 
     this.handlePop = this.handlePop.bind(this);
@@ -29,6 +29,10 @@ class Session extends Component {
 
   writeSession(session_name, items, paddingLength) {
     return localStorage.setItem(session_name, JSON.stringify({items, paddingLength}));
+  }
+
+  destroySession(session_name) {
+    return localStorage.setItem(session_name, null);
   }
 
   copyToClipboard(event) {
@@ -62,7 +66,8 @@ class Session extends Component {
     const { session_name, items, paddingLength } = this.state;
 
     if (!items.length) {
-      this.setState({ session_name: null, items: null });
+      this.setState({ session_name: "", items: null });
+      this.destroySession(session_name);
       return;
     }
 
@@ -138,7 +143,7 @@ class Session extends Component {
               <input type="text" value={this.state.start} onChange={this.handleChangeStart} />
             </label>
             {startError && 
-                <p className="App-error">{startError}</p>
+                <span className="App-error">{startError}</span>
             }
           </p>
 
@@ -148,13 +153,13 @@ class Session extends Component {
               <input type="text" value={this.state.stop} onChange={this.handleChangeStop} />
             </label>
             {stopError && 
-                <p className="App-error">{stopError}</p>
+                <span className="App-error">{stopError}</span>
             }
           </p>
 
-          <p className="App-form-element">
+          <span className="App-form-element">
             <input type="submit" value="Create Session" />
-          </p>
+          </span>
         </form>
       </div>
     );
