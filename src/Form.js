@@ -18,8 +18,10 @@ class Form extends Component {
   }
 
   getSession(session_name) {
-    let items = [];
+    let items = null;
     const session = localStorage.getItem(session_name);
+    if (!session) return items;
+
     try {
       items = JSON.parse(`[${session}]`);
     } catch(error) { console.log('Error parsing session')}
@@ -28,21 +30,37 @@ class Form extends Component {
   }
 
   handleSubmit(event) {
+    event.preventDefault();
+
     const { session_name } = this.state;
     const session = this.getSession(session_name);
-    this.handleSessionFound(session_name, session);
 
-    event.preventDefault();
+    if (!session) {
+      this.setState({ errors: `No randomization found for '${session_name}'` });
+      return;
+    }
+
+    this.handleSessionFound(session_name, session);
+    this.setState({ errors: null});
   }
 
   render() {
+    const { errors } = this.state;
+
     return (
-      <form onSubmit={this.handleSubmit}>
-        <p className="App-intro">If you know the <b>name</b> of a running session type it here:</p>
+      <form onSubmit={this.handleSubmit} className="App-form">
+        <p className="App-form-element">
         <label>
+           If you know the <b>name</b> of a running randomization type it here:
           <input type="text" value={this.state.session_name} onChange={this.handleChange} />
         </label>
-        <input type="submit" value="Find" />
+        </p>
+        <p className="App-form-element">
+          <input type="submit" value="Find" />
+        </p>
+        {errors && 
+          <p className="App-error">{errors}</p>
+        }
       </form>
     );
   }

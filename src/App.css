@@ -22,8 +22,22 @@
   font-size: large;
 }
 
+.App-form {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.App-form-element {
+  margin: 10px;
+}
+
+.App-form-element input {
+  margin-left: 3px;
+}
+
 .App-number {
-  font-size: 1.5em;
+  font-size: 2.5em;
   color: orange;
 }
 
