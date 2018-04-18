@@ -37,13 +37,18 @@
 }
 
 .App-number {
-  font-size: 2.5em;
+  font-size: 4.5em;
   color: orange;
 }
 
 .App-error {
   font-size: small;
   color: red;
+}
+
+.App-warn {
+  margin-left: 10px;
+  color: cyan;
 }
 
 @keyframes App-logo-spin {

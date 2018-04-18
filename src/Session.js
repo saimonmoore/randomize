@@ -20,6 +20,7 @@ class Session extends Component {
     this.handleChangeStart = this.handleChangeStart.bind(this);
     this.handleChangeStop = this.handleChangeStop.bind(this);
     this.handleSessionFound = this.handleSessionFound.bind(this);
+    this.copyToClipboard = this.copyToClipboard.bind(this);
   }
 
   handleSessionFound(session_name, items) {
@@ -29,6 +30,17 @@ class Session extends Component {
   writeSession(session_name, items) {
     return localStorage.setItem(session_name, items);
   }
+
+  copyToClipboard(event) {
+    const { currentNumber } = this.state;
+    const textField = document.createElement('textarea')
+    textField.innerText = currentNumber;
+    document.body.appendChild(textField);
+    textField.select();
+    document.execCommand('copy');
+    textField.remove();
+    this.setState({ copySuccess: 'Copied!' });
+  };
 
   createSession() {
     const { session_name, start, stop } = this.state;
@@ -57,7 +69,7 @@ class Session extends Component {
     const lastNumber = items.pop();
     const currentNumber = this.paddedNumber(lastNumber);
     this.writeSession(session_name, items);
-    this.setState({ items, currentNumber});
+    this.setState({ items, currentNumber, copySuccess: ""});
 
     event.preventDefault();
   }
@@ -152,13 +164,16 @@ class Session extends Component {
         <p className="App-intro">Randomization: {session_name}</p>
 
         {currentNumber &&
-            <span className="App-number">{currentNumber}</span>
+            <span className="App-number" onClick={this.copyToClipboard}>{currentNumber}</span>
         }
 
-        <form onSubmit={this.handlePop}>
-          <p className="App-intro">{items.length} numbers left</p>
-          <input type="submit" value="Next number" />
-        </form>
+        <div className="App-form">
+          <form onSubmit={this.handlePop}>
+            <p className="App-intro">{items.length} numbers left</p>
+            <input type="submit" value="Next number" />
+            <span className="App-warn">{this.state.copySuccess}</span>
+          </form>
+        </div>
       </div>
     );
   }
