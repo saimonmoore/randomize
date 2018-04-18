@@ -23,12 +23,12 @@ class Session extends Component {
     this.copyToClipboard = this.copyToClipboard.bind(this);
   }
 
-  handleSessionFound(session_name, items) {
-    this.setState({ session_name, items });
+  handleSessionFound(session_name, items, paddingLength) {
+    this.setState({ session_name, items, paddingLength });
   }
 
-  writeSession(session_name, items) {
-    return localStorage.setItem(session_name, items);
+  writeSession(session_name, items, paddingLength) {
+    return localStorage.setItem(session_name, JSON.stringify({items, paddingLength}));
   }
 
   copyToClipboard(event) {
@@ -49,7 +49,7 @@ class Session extends Component {
     const items = _.shuffle(unshuffledItems);
     const paddingLength = String(_.max(items)).length;
 
-    this.writeSession(session_name, items);
+    this.writeSession(session_name, items, paddingLength);
     this.setState({ session_name, items, paddingLength });
   }
 
@@ -59,7 +59,7 @@ class Session extends Component {
   }
 
   handlePop(event) {
-    const { session_name, items } = this.state;
+    const { session_name, items, paddingLength } = this.state;
 
     if (!items.length) {
       this.setState({ session_name: null, items: null });
@@ -68,7 +68,7 @@ class Session extends Component {
 
     const lastNumber = items.pop();
     const currentNumber = this.paddedNumber(lastNumber);
-    this.writeSession(session_name, items);
+    this.writeSession(session_name, items, paddingLength);
     this.setState({ items, currentNumber, copySuccess: ""});
 
     event.preventDefault();

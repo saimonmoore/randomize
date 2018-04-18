@@ -18,15 +18,17 @@ class Form extends Component {
   }
 
   getSession(session_name) {
-    let items = null;
-    const session = localStorage.getItem(session_name);
-    if (!session) return items;
+    let session = null;
+    const raw_session = localStorage.getItem(session_name);
+    if (!raw_session) return null;
 
     try {
-      items = JSON.parse(`[${session}]`);
+      session = JSON.parse(raw_session);
     } catch(error) { console.log('Error parsing session')}
 
-    return items;
+    const paddingLength = parseInt(session.paddingLength, 10);
+
+    return session;
   }
 
   handleSubmit(event) {
@@ -35,12 +37,12 @@ class Form extends Component {
     const { session_name } = this.state;
     const session = this.getSession(session_name);
 
-    if (!session) {
+    if (!session.items.length) {
       this.setState({ errors: `No randomization found for '${session_name}'` });
       return;
     }
 
-    this.handleSessionFound(session_name, session);
+    this.handleSessionFound(session_name, session.items, session.paddingLength);
     this.setState({ errors: null});
   }
 
