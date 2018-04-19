@@ -22,6 +22,11 @@
   font-size: large;
 }
 
+.App-number {
+  font-size: 4.5em;
+  color: orange;
+}
+
 .App-form {
   display: flex;
   justify-content: center;
@@ -36,9 +41,17 @@
   margin-left: 3px;
 }
 
-.App-number {
-  font-size: 4.5em;
-  color: orange;
+.App-popped-items {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  list-style-type: none;
+}
+
+.App-popped-item {
+  font-size: 10px;
+  color: gray;
+  margin-left: 5px;
 }
 
 .App-error {

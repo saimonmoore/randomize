@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Storage from './Storage.js';
 
 class Form extends Component {
   constructor(props) {
@@ -10,6 +11,8 @@ class Form extends Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+
+    this.storage = new Storage();
   }
 
   handleChange(event) {
@@ -17,31 +20,34 @@ class Form extends Component {
     this.setState({ session_name });
   }
 
-  getSession(session_name) {
-    let session = null;
-    const raw_session = localStorage.getItem(session_name);
-    if (!raw_session) return null;
+  getSession(session_name, fn) {
+    this.storage.getItem(session_name, (error, session) => {
+      if (error) return fn(error, null);
+      if (!session) return fn(null, null);
+      if (!session.items.length) return fn(null, null);
 
-    try {
-      session = JSON.parse(raw_session);
-    } catch(error) { console.log('Error parsing session')}
-
-    return session;
+      fn(null, session);
+    });
   }
 
   handleSubmit(event) {
     event.preventDefault();
 
     const { session_name } = this.state;
-    const session = this.getSession(session_name);
+    this.getSession(session_name, (error, session) => {
+      if (error) {
+        this.setState({ errors: `Failed to get randomization for '${session_name}'...error: ${error}` });
+        return;
+      }
 
-    if (!session || !session.items.length) {
-      this.setState({ errors: `No randomization found for '${session_name}'` });
-      return;
-    }
+      if (!session || !session.items.length) {
+        this.setState({ errors: `No randomization found for '${session_name}'` });
+        return;
+      }
 
-    this.handleSessionFound(session_name, session.items, session.paddingLength);
-    this.setState({ errors: null});
+      this.handleSessionFound(session_name, session);
+      this.setState({ errors: null});
+    });
   }
 
   render() {

@@ -2,13 +2,15 @@ import React, { Component } from 'react';
 import _ from 'lodash';
 
 import Form from './Form.js';
+import Storage from './Storage.js';
 
 class Session extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      items: null,
+      session: { items: null, popped_items: [] },
+      popped_items: null,
       start: 0,
       stop: 0,
       session_name: ""
@@ -21,60 +23,71 @@ class Session extends Component {
     this.handleChangeStop = this.handleChangeStop.bind(this);
     this.handleSessionFound = this.handleSessionFound.bind(this);
     this.copyToClipboard = this.copyToClipboard.bind(this);
+
+    this.storage = new Storage();
   }
 
-  handleSessionFound(session_name, items, paddingLength) {
-    this.setState({ session_name, items, paddingLength });
+  handleSessionFound(session_name, session) {
+    this.setState({ session_name, session });
   }
 
-  writeSession(session_name, items, paddingLength) {
-    return localStorage.setItem(session_name, JSON.stringify({items, paddingLength}));
+  writeSession(session_name, session) {
+    return this.storage.setItem(session_name, session);
   }
 
   destroySession(session_name) {
-    return localStorage.setItem(session_name, null);
+    return this.storage.destroyItem(session_name, null);
   }
 
-  copyToClipboard(event) {
-    const { currentNumber } = this.state;
-    const textField = document.createElement('textarea')
-    textField.innerText = currentNumber;
-    document.body.appendChild(textField);
-    textField.select();
-    document.execCommand('copy');
-    textField.remove();
-    this.setState({ copySuccess: 'Copied!' });
+  copyToClipboard(number) {
+    return (event) => {
+      const textField = document.createElement('textarea');
+      textField.innerText = number;
+      document.body.appendChild(textField);
+      textField.select();
+      document.execCommand('copy');
+      textField.remove();
+      this.setState({ copySuccess: 'Copied!' });
+    };
   };
 
   createSession() {
-    const { session_name, start, stop } = this.state;
+    const { session_name, session, start, stop } = this.state;
 
     const unshuffledItems = _.range(start, stop + 1, 1);
     const items = _.shuffle(unshuffledItems);
     const paddingLength = String(_.max(items)).length;
 
-    this.writeSession(session_name, items, paddingLength);
-    this.setState({ session_name, items, paddingLength });
+    Object.assign(session, { items, paddingLength });
+    this.writeSession(session_name, session);
+    this.setState({ session_name, session });
   }
 
   paddedNumber(number) {
-    const { paddingLength } = this.state;
+    const { paddingLength } = this.state.session;
     return String(number).padStart(paddingLength, "0");
   }
 
   handlePop(event) {
-    const { session_name, items, paddingLength } = this.state;
+    const { session_name, session } = this.state;
+    const { items, popped_items } = session;
 
     if (!items.length) {
-      this.setState({ session_name: "", items: null });
+      this.setState({ session_name: "", session: { items: null, popped_items: [] } });
       this.destroySession(session_name);
       return;
     }
 
     const lastNumber = items.pop();
+    const pitems = Array.from(popped_items || [])
+
     const currentNumber = this.paddedNumber(lastNumber);
-    this.writeSession(session_name, items, paddingLength);
-    this.setState({ items, currentNumber, copySuccess: ""});
+    pitems.push(currentNumber);
+
+    Object.assign(session, { items, popped_items: pitems });
+
+    this.writeSession(session_name, session);
+    this.setState({ session, currentNumber, copySuccess: ""});
 
     event.preventDefault();
   }
@@ -117,7 +130,8 @@ class Session extends Component {
   }
 
   render() {
-    const { session_name, items, currentNumber, error } = this.state;
+    const { session_name, session, currentNumber, error } = this.state;
+    const { items, popped_items } = session;
     const startError = error && error.start;
     const stopError = error && error.stop;
 
@@ -166,15 +180,22 @@ class Session extends Component {
 
     return (
       <div>
-        <p className="App-intro">Randomization: {session_name}</p>
+        <p className="App-intro">Randomization: {session_name} ({items.length} numbers left)</p>
 
         {currentNumber &&
-            <span className="App-number" onClick={this.copyToClipboard}>{currentNumber}</span>
+            <span className="App-number" onClick={this.copyToClipboard(currentNumber)}>{currentNumber}</span>
         }
+
+        <ul className="App-popped-items">
+          {currentNumber &&
+              popped_items.map((popped_item, index) => (
+                <li key={ index }><span className="App-popped-item" onClick={this.copyToClipboard(popped_item)}>{popped_item}</span></li>
+              )) 
+          }
+        </ul>
 
         <div className="App-form">
           <form onSubmit={this.handlePop}>
-            <p className="App-intro">{items.length} numbers left</p>
             <input type="submit" value="Next number" />
             <span className="App-warn">{this.state.copySuccess}</span>
           </form>
